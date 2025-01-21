@@ -4,9 +4,11 @@ use std::{num::ParseIntError, str::FromStr};
 
 use thiserror::Error;
 
+#[derive(Debug)]
 enum Command {
     EXIT,
     ECHO(String),
+    TYPE(String),
 }
 
 #[derive(Debug, Error)]
@@ -34,6 +36,7 @@ impl FromStr for Command {
                     }
                 }
                 "echo" => return Ok(Self::ECHO(option.to_string())),
+                "type" => return Ok(Self::TYPE(option.to_string())),
                 _ => {}
             },
             _ => {}
@@ -60,6 +63,18 @@ fn main() {
                 Command::ECHO(s) => {
                     println!("{}", s)
                 }
+                Command::TYPE(s) => match s.as_str() {
+                    "exit" => {
+                        println!("exit is a shell builtin");
+                    }
+                    "type" => {
+                        println!("type is a shell builtin");
+                    }
+                    "echo" => {
+                        println!("echo is a shell builtin");
+                    }
+                    _ => println!("{}: not found", s),
+                },
             },
             Err(e) => {
                 println!("{}: {}", input.trim(), e)
