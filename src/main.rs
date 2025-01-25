@@ -1,7 +1,5 @@
-#[allow(unused_imports)]
 use std::io::{self, Write};
 use std::{num::ParseIntError, str::FromStr};
-
 use thiserror::Error;
 
 #[derive(Debug)]
@@ -47,7 +45,6 @@ impl FromStr for Command {
 }
 
 fn main() {
-    // Uncomment this block to pass the first stage
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -73,7 +70,28 @@ fn main() {
                     "echo" => {
                         println!("echo is a shell builtin");
                     }
-                    _ => println!("{}: not found", s),
+                    cmd => match std::env::var("PATH") {
+                        Ok(path) => {
+                            let paths = path.split(":");
+                            let mut location = None;
+                            for p in paths {
+                                let file = format!("{}/{}", p, cmd);
+                                if std::fs::metadata(&file).is_ok() {
+                                    location = Some(file);
+                                    break;
+                                }
+                            }
+
+                            if let Some(path) = location {
+                                println!("{} is {}", cmd, path);
+                            } else {
+                                println!("{}: not found", cmd);
+                            }
+                        }
+                        Err(_) => {
+                            println!("{}: not found", cmd);
+                        }
+                    },
                 },
             },
             Err(e) => {
